@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tarea6.Server", "Server\Tarea6.Server.csproj", "{1B910BBB-764B-45C2-957E-7F833493E515}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tarea6.Server", "Server\Tarea6.Server.csproj", "{1B910BBB-764B-45C2-957E-7F833493E515}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tarea6.Client", "Client\Tarea6.Client.csproj", "{FBB53F63-E89B-4042-A64A-FEAB3DBD2A49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tarea6.Client", "Client\Tarea6.Client.csproj", "{FBB53F63-E89B-4042-A64A-FEAB3DBD2A49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tarea6.Shared", "Shared\Tarea6.Shared.csproj", "{3D28DA60-153A-471E-8988-CF6FA2C325EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tarea6.Shared", "Shared\Tarea6.Shared.csproj", "{3D28DA60-153A-471E-8988-CF6FA2C325EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

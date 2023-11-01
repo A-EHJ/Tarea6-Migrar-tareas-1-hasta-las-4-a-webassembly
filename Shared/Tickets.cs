@@ -5,8 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tarea6.Shared
-{
+namespace Tarea6.Shared { 
     public class Tickets
     {
 
