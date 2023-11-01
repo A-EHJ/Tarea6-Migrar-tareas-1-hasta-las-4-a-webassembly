@@ -1,0 +1,181 @@
+﻿@page "/Registrar/Clientes"
+@page "/Registrar/Clientes/{ClienteId:int}"
+@using Tarea6.Shared;
+
+
+@inject NotificationService notificationService
+@inject HttpClient httpClient
+
+<PageTitle>Registrar Cliente</PageTitle> 
+
+<EditForm Model="Clientes" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h3 class="centrar-texto">Registrar Clientes</h3>
+            </div>
+            <div class=card-body>
+
+                @*ClienteId*@
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+                    <label>ClienteId:</label>
+                    <div class="input-group mb-3">
+                        <InputNumber @bind-Value="Clientes.ClienteId" class="form-control" aria-describedby="BotonBuscar" />
+                        <button @onclick="Buscar" class="btn btn-outline-primary" type="button" id="BotonBuscar"><i class="oi oi-magnifying-glass" /></button>
+                    </div>
+                </div>
+
+                @*Nombres*@
+                <div class="mb-3">
+                    <label class="form-label" for="Nombres">Nombres:</label>
+                    <InputText @bind-Value="Clientes.Nombres"  class="form-control" placeholder="Nombres" />
+                    <ValidationMessage For="@(() => Clientes.Nombres)" />
+                </div>
+
+                @*Telefono*@
+                <div class="mb-3">
+                    <label class="form-label">Telefono</label>
+                    <InputText @bind-Value="Clientes.Telefono" class="form-control" placeholder="123-456-7890" />
+                    <ValidationMessage For="@(() => Clientes.Telefono)" />
+                </div>
+
+                @*Celular*@
+                <div class="mb-3">
+                    <label class="form-label">Celular</label>
+                    <InputText @bind-Value="Clientes.Celular" class="form-control" placeholder="123-456-7890" />
+                    <ValidationMessage For="@(() => Clientes.Celular)" />
+                </div>
+
+                @*Rnc*@
+                <div class="mb-3">
+                    <label class="form-label">Rnc</label>
+                    <InputText @bind-Value="Clientes.Rnc" class="form-control" placeholder="000000000" />
+                    <ValidationMessage For="@(() => Clientes.Rnc)" />
+                </div>
+
+                @*Email*@
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <InputText @bind-Value="Clientes.Email" class="form-control" placeholder="Ejemplo@gmail.com" />
+                    <ValidationMessage For="@(() => Clientes.Email)" />
+                </div>
+
+                @*Dirección*@
+                <div class="mb-3">
+                    <label class="form-label">Dirección</label>
+                    <InputText @bind-Value="Clientes.Direccion" class="form-control" placeholder="Dirección" />
+                    <ValidationMessage For="@(() => Clientes.Direccion)" />
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-center">
+            <div class="btn-group">
+                <button type="button" class="btn-nuevo" @onclick="Nuevo">Nuevo <i class="oi oi-file" /></button>
+                <button type="submit" class="btn-guardar">Guardar <i class="oi oi-document" /></button>
+                <button type="button" class="btn-eliminar" @onclick="Eliminar"> Eliminar <i class="oi oi-trash" /></button>
+            </div>
+        </div>
+    </div>
+
+</EditForm>
+
+
+
+@code {
+    [Parameter]
+
+    public int ClienteId { get; set; }
+
+    public Clientes Clientes { get; set; } = new Clientes();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ClienteId > 0)
+        {
+            this.Clientes.ClienteId = ClienteId;
+            await Buscar();
+        }
+    }
+
+    public async Task Buscar()
+    {
+        try { await httpClient.GetFromJsonAsync<Clientes>($"api/Clientes/{Clientes.ClienteId}"); }
+        catch (Exception ex)
+        {
+            var mensaje = new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "No se ha encontrado",
+                    Detail = ex.Message,
+                    Duration = 4000
+                };
+            notificationService.Notify(mensaje);
+            this.Nuevo();
+            return;
+        }
+        var PrioridadEncontrada = await httpClient.GetFromJsonAsync<Clientes>($"api/Clientes/{Clientes.ClienteId}");
+        if (PrioridadEncontrada != null)
+        {
+            this.Clientes = PrioridadEncontrada;
+            StateHasChanged();
+        }
+    }
+
+    public async Task Guardar()
+    {
+        using var response = await httpClient.PostAsJsonAsync("api/Clientes", Clientes);
+        if (!response.IsSuccessStatusCode)
+        {
+            var mensaje = new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "No se ha guardado",
+                    Detail = response.ReasonPhrase ?? "error",
+                    Duration = 4000
+                };
+            notificationService.Notify(mensaje);
+            return;
+        }
+        var Respuesta = await response.Content.ReadFromJsonAsync<Clientes>();
+        if (Respuesta is not null)
+        {
+            var mensaje = new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Se ha guardado",
+                    Detail = "Se ha creado",
+                    Duration = 4000
+                };
+            notificationService.Notify(mensaje);
+            Clientes = Respuesta;
+            StateHasChanged();
+        }
+    }
+
+    public void Nuevo()
+    {
+        this.Clientes = new Clientes();
+    }
+
+    public async Task Eliminar()
+    {
+        using var response = await httpClient.DeleteAsync($"api/Clientes/{Clientes.ClienteId}");
+        if (!response.IsSuccessStatusCode)
+        {
+            var mensaje = new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "No se ha Eliminado",
+                    Detail = response.ReasonPhrase ?? "error",
+                    Duration = 4000
+                };
+            notificationService.Notify(mensaje);
+            return;
+        }
+        else
+            Nuevo();
+    }
+}

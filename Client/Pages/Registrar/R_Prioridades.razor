@@ -1,0 +1,148 @@
+﻿@page "/Registrar/Prioridades"
+@page "/Registrar/Prioridades/{PrioridadId:int}"
+@using Tarea6.Shared;
+@inject NotificationService notificationService
+@inject HttpClient httpClient
+
+<PageTitle>Registrar Prioridades</PageTitle>
+
+<EditForm Model="Prioridad" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h3 class="en-el-medio">Registrar Prioridades</h3>
+            </div>
+            <div class=card-body>
+
+                @*PrioridadId*@
+                <div class="col-xs-12 col-sm-12 col-md-8 col-lg-6 col-xl-4">
+                    <label>PrioridadId:</label>
+                    <div class="input-group mb-3">
+                        <InputNumber @bind-Value="Prioridad.PrioridadId" class="form-control" aria-describedby="BotonBuscar" />
+                        <button @onclick="Buscar" class="btn btn-outline-primary" type="button" id="BotonBuscar"><i class="oi oi-magnifying-glass" /></button>
+                    </div>
+                </div>
+                @*Descripcion*@
+                <div class="mb-3">
+                    <label class="form-label" for="Descripcion">Descripción:</label>
+                    <InputText @bind-Value="Prioridad.Descripcion" class="form-control" />
+                    <ValidationMessage For="@(() => Prioridad.Descripcion)" />
+                </div>
+
+                @*Dias Compromiso*@
+                <div class="mb-3">
+                    <label class="form-label">Dias de compromiso:</label>
+                    <InputNumber @bind-Value="Prioridad.DiasCompromiso" class="form-control" />
+                    <ValidationMessage For="@(() => Prioridad.DiasCompromiso)" />
+                </div>
+            </div>
+
+            <div class="card-footer d-flex justify-content-center">
+                <div class="btn-group">
+                    <button type="button" class="btn-nuevo" @onclick="Nuevo">Nuevo</button>
+                    <button type="submit" class="btn-guardar">Guardar</button>
+                    <button type="button" class="btn-eliminar" @onclick="Eliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    [Parameter]
+
+    public int PrioridadId { get; set; }
+
+    public Prioridades Prioridad { get; set; } = new Prioridades();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (PrioridadId > 0)
+        {
+            this.Prioridad.PrioridadId = PrioridadId;
+            await Buscar();
+        }
+    }
+
+    public async Task Buscar()
+    {
+        try { await httpClient.GetFromJsonAsync<Prioridades>($"api/Prioridades/{Prioridad.PrioridadId}"); }
+        catch (Exception ex)
+        {
+            var mensaje = new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "No se ha encontrado",
+                    Detail = ex.Message,
+                    Duration = 4000
+                };
+            notificationService.Notify(mensaje);
+            this.Nuevo();
+            return;
+        }
+        var PrioridadEncontrada = await httpClient.GetFromJsonAsync<Prioridades>($"api/Prioridades/{Prioridad.PrioridadId}");
+        if (PrioridadEncontrada != null)
+        {
+            this.Prioridad = PrioridadEncontrada;
+            StateHasChanged();
+        }
+    }
+
+    public async Task Guardar()
+    {
+        using var response = await httpClient.PostAsJsonAsync("api/Prioridades", Prioridad);
+        if (!response.IsSuccessStatusCode)
+        {
+            var mensaje = new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "No se ha guardado",
+                    Detail = response.ReasonPhrase ?? "error",
+                    Duration = 4000
+                };
+            notificationService.Notify(mensaje);
+            return;
+        }
+        var Respuesta = await response.Content.ReadFromJsonAsync<Prioridades>();
+        if (Respuesta is not null)
+        {
+            var mensaje = new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Se ha guardado",
+                    Detail = "Se ha creado",
+                    Duration = 4000
+                };
+            notificationService.Notify(mensaje);
+            Prioridad = Respuesta;
+            StateHasChanged();
+        }
+    }
+
+    public void Nuevo()
+    {
+        this.Prioridad = new Prioridades();
+    }
+
+    public async Task Eliminar()
+    {
+        using var response = await httpClient.DeleteAsync($"api/Prioridades/{Prioridad.PrioridadId}");
+        if (!response.IsSuccessStatusCode)
+        {
+            var mensaje = new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "No se ha Eliminado",
+                    Detail = response.ReasonPhrase ?? "error",
+                    Duration = 4000
+                };
+            notificationService.Notify(mensaje);
+            return;
+        }
+        else
+            Nuevo();
+    }
+}
